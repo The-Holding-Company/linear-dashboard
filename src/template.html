@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HoldingCo · Linear Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+         background: var(--bg); color: var(--fg); }
+  header { padding: 24px 32px; border-bottom: 1px solid var(--border);
+           display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; }
+  header .meta a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+              gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase;
+                letter-spacing: 0.5px; margin-bottom: 6px; }
+  .kpi .val { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kpi .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .kpi.accent .val { color: var(--accent); }
+  .kpi.good .val { color: var(--green); }
+  .kpi.warn .val { color: var(--yellow); }
+  .kpi.bad .val { color: var(--red); }
+  .row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .row.thirds { grid-template-columns: repeat(3, 1fr); }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .panel h2 { margin: 0 0 16px; font-size: 13px; font-weight: 600;
+              color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-wrap { position: relative; height: 280px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px;
+       text-transform: uppercase; letter-spacing: 0.5px; }
+  td a { color: var(--accent); text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .id { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .pill.completed { background: rgba(63,185,80,.15); color: var(--green); }
+  .pill.started { background: rgba(88,166,255,.15); color: var(--accent); }
+  .pill.backlog { background: rgba(139,148,158,.15); color: var(--muted); }
+  .pill.unstarted { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .pill.canceled { background: rgba(248,81,73,.15); color: var(--red); }
+  .pill.triage { background: rgba(188,140,255,.15); color: var(--purple); }
+  .label-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+  .label-row .name { flex: 0 0 140px; }
+  .label-row .bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .label-row .bar > div { height: 100%; background: var(--accent); }
+  .label-row .ct { color: var(--muted); font-variant-numeric: tabular-nums; width: 30px; text-align: right; }
+  .mini-stat { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .mini-label { color: var(--muted); font-size: 11px; }
+  @media (max-width: 900px) { .row, .row.thirds { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>HoldingCo &middot; Linear Dashboard <span style="color:var(--muted);font-weight:400;font-size:14px;">team HC</span></h1>
+  <div class="meta">generated __GENERATED__ &middot; <a href="https://linear.app/holdingco11/team/HC/all">open in Linear &#8599;</a></div>
+</header>
+<main>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="label">Total issues</div><div class="val">__TOTAL__</div></div>
+    <div class="kpi accent"><div class="label">Open</div><div class="val">__OPEN__</div><div class="sub">__IN_PROGRESS__ in progress &middot; __BACKLOG__ backlog</div></div>
+    <div class="kpi good"><div class="label">Completed</div><div class="val">__COMPLETED__</div><div class="sub">__COMPLETION_PCT__% completion rate</div></div>
+    <div class="kpi bad"><div class="label">Canceled</div><div class="val">__CANCELED__</div></div>
+    <div class="kpi warn"><div class="label">Burn rate</div><div class="val">__BURN__<span style="font-size:14px;color:var(--muted);">/wk</span></div><div class="sub">__WTC__</div></div>
+    <div class="kpi"><div class="label">Avg open age</div><div class="val">__AVG_AGE__<span style="font-size:14px;color:var(--muted);">d</span></div><div class="sub">oldest: __OLDEST__</div></div>
+  </div>
+
+  <div class="row thirds">
+    <div class="panel"><h2>Created</h2>
+      <div style="display:flex;gap:32px;">
+        <div><div class="mini-stat">__CREATED_TODAY__</div><div class="mini-label">today</div></div>
+        <div><div class="mini-stat">__CREATED_7D__</div><div class="mini-label">7 days</div></div>
+        <div><div class="mini-stat">__CREATED_30D__</div><div class="mini-label">30 days</div></div>
+      </div>
+    </div>
+    <div class="panel"><h2>Closed</h2>
+      <div style="display:flex;gap:32px;">
+        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_TODAY__</div><div class="mini-label">today</div></div>
+        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_7D__</div><div class="mini-label">7 days</div></div>
+        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_30D__</div><div class="mini-label">30 days</div></div>
+      </div>
+    </div>
+    <div class="panel"><h2>Net change &middot; 30d</h2>
+      <div class="mini-stat">__NET_30D__</div>
+      <div class="mini-label">created &minus; closed</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="panel"><h2>Created vs closed &middot; last 12 weeks</h2>
+      <div class="chart-wrap"><canvas id="velocity"></canvas></div></div>
+    <div class="panel"><h2>State distribution</h2>
+      <div class="chart-wrap"><canvas id="state"></canvas></div></div>
+  </div>
+
+  <div class="row">
+    <div class="panel"><h2>Priority</h2>
+      <div class="chart-wrap"><canvas id="prio"></canvas></div></div>
+    <div class="panel"><h2>Top labels</h2>
+      <div id="labels"></div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:24px;"><h2>Most recent issues</h2>
+    <table><thead><tr><th>ID</th><th>Title</th><th>State</th><th>Priority</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody id="recent"></tbody></table></div>
+
+  <div class="panel"><h2>Stale open issues &middot; older than 14 days</h2>
+    <table><thead><tr><th>ID</th><th>Title</th><th>State</th><th>Age</th></tr></thead>
+      <tbody id="stale"></tbody></table></div>
+</main>
+
+<script>
+const D = __DASHBOARD_JSON__;
+const css = getComputedStyle(document.documentElement);
+const muted = css.getPropertyValue('--muted').trim();
+const accent = css.getPropertyValue('--accent').trim();
+const green = css.getPropertyValue('--green').trim();
+const yellow = css.getPropertyValue('--yellow').trim();
+const red = css.getPropertyValue('--red').trim();
+const purple = css.getPropertyValue('--purple').trim();
+const border = css.getPropertyValue('--border').trim();
+const panel = css.getPropertyValue('--panel').trim();
+
+Chart.defaults.color = muted;
+Chart.defaults.borderColor = border;
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, system-ui, sans-serif';
+
+new Chart(document.getElementById('velocity'), {
+  type: 'bar',
+  data: { labels: D.week_buckets.map(b => b.label),
+    datasets: [
+      { label: 'Created', data: D.week_buckets.map(b => b.created), backgroundColor: accent+'cc', borderRadius: 4 },
+      { label: 'Closed', data: D.week_buckets.map(b => b.closed), backgroundColor: green+'cc', borderRadius: 4 },
+    ]},
+  options: { responsive: true, maintainAspectRatio: false,
+    scales: { y: { beginAtZero: true, grid: { color: border }, ticks: { precision: 0 } },
+              x: { grid: { display: false } } },
+    plugins: { legend: { position: 'bottom' } } },
+});
+
+const stateColors = { 'Done':green,'Completed':green,'In Progress':accent,'Backlog':muted,
+                      'Todo':yellow,'Canceled':red,'Cancelled':red,'Triage':purple,'In Review':accent };
+const stateLabels = Object.keys(D.state_counts);
+new Chart(document.getElementById('state'), {
+  type: 'doughnut',
+  data: { labels: stateLabels,
+    datasets: [{ data: stateLabels.map(l => D.state_counts[l]),
+      backgroundColor: stateLabels.map(l => stateColors[l] || muted),
+      borderColor: panel, borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false,
+             plugins: { legend: { position: 'right' } }, cutout: '60%' },
+});
+
+const prioOrder = ['Urgent','High','Medium','Low','None'];
+const prioColors = { Urgent: red, High: yellow, Medium: accent, Low: muted, None: muted };
+new Chart(document.getElementById('prio'), {
+  type: 'bar',
+  data: { labels: prioOrder,
+    datasets: [{ data: prioOrder.map(p => D.prio_counts[p] || 0),
+                 backgroundColor: prioOrder.map(p => prioColors[p]), borderRadius: 4 }] },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, grid: { color: border }, ticks: { precision: 0 } },
+              y: { grid: { display: false } } } },
+});
+
+const maxLabel = D.top_labels.length ? D.top_labels[0][1] : 1;
+document.getElementById('labels').innerHTML = D.top_labels.map(([name, ct]) =>
+  `<div class="label-row"><div class="name">${name}</div>
+     <div class="bar"><div style="width:${(ct/maxLabel*100).toFixed(0)}%"></div></div>
+     <div class="ct">${ct}</div></div>`).join('');
+
+document.getElementById('recent').innerHTML = D.recent.map(r =>
+  `<tr><td class="id">${r.id}</td>
+     <td><a href="${r.url}" target="_blank">${r.title}</a></td>
+     <td><span class="pill ${r.state_type}">${r.state}</span></td>
+     <td>${r.priority}</td><td>${r.assignee}</td>
+     <td class="id">${r.created}</td></tr>`).join('');
+
+if (D.stale.length === 0) {
+  document.getElementById('stale').innerHTML = '<tr><td colspan="4" style="color:var(--muted);">No open issues older than 14 days.</td></tr>';
+} else {
+  document.getElementById('stale').innerHTML = D.stale.map(r =>
+    `<tr><td class="id">${r.id}</td>
+       <td><a href="${r.url}" target="_blank">${r.title}</a></td>
+       <td>${r.state}</td><td class="id">${r.age}d</td></tr>`).join('');
+}
+</script>
+</body>
+</html>

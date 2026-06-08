@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+
+# Env
+.env
+.venv/
+
+# Dashboard output (regenerated)
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
