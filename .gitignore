@@ -15,3 +15,6 @@ dist/
 
 # System
 .DS_Store
+
+# CB venv
+cb/
