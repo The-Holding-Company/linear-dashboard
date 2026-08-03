@@ -2,6 +2,7 @@
 """Fetch HoldingCo HC issues from Linear and render a self-contained dashboard."""
 
 import json
+import os
 import sys
 import urllib.request
 from collections import Counter
@@ -23,13 +24,19 @@ QUERY = (
 )
 
 
-def fetch():
+def token():
+    env = os.environ.get("LINEAR_API_KEY")
+    if env:
+        return env
     cfg = json.load(CONFIG.open())
-    token = cfg["workspaces"]["holdingco11"]["users"]["cbergeron"]["keys"]["read_only"]
+    return cfg["workspaces"]["holdingco11"]["users"]["cbergeron"]["keys"]["read_only"]
+
+
+def fetch():
     req = urllib.request.Request(
         "https://api.linear.app/graphql",
         data=json.dumps({"query": QUERY}).encode(),
-        headers={"Authorization": token, "Content-Type": "application/json"},
+        headers={"Authorization": token(), "Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
