@@ -17,8 +17,10 @@ CACHE = ROOT / "dist" / "issues.json"
 CONFIG = Path.home() / ".config" / "linear" / "config.json"
 
 QUERY = (
-    'query{issues(filter:{team:{key:{eq:"HC"}}},first:250,orderBy:createdAt)'
-    "{nodes{identifier title url createdAt completedAt canceledAt updatedAt "
+    "query($after:String){"
+    'issues(filter:{team:{key:{eq:"HC"}}},first:250,after:$after,orderBy:createdAt)'
+    "{pageInfo{hasNextPage endCursor}"
+    "nodes{identifier title url createdAt completedAt canceledAt updatedAt "
     "priority estimate state{name type} team{key} "
     "labels{nodes{name}} assignee{name}}}}"
 )
@@ -33,13 +35,23 @@ def token():
 
 
 def fetch():
-    req = urllib.request.Request(
-        "https://api.linear.app/graphql",
-        data=json.dumps({"query": QUERY}).encode(),
-        headers={"Authorization": token(), "Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.load(r)
+    nodes, cursor = [], None
+    while True:
+        req = urllib.request.Request(
+            "https://api.linear.app/graphql",
+            data=json.dumps({"query": QUERY, "variables": {"after": cursor}}).encode(),
+            headers={"Authorization": token(), "Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:
+            page = json.load(r)
+        if page.get("errors"):
+            raise RuntimeError(page["errors"])
+        conn = page["data"]["issues"]
+        nodes.extend(conn["nodes"])
+        if not conn["pageInfo"]["hasNextPage"]:
+            break
+        cursor = conn["pageInfo"]["endCursor"]
+    return {"data": {"issues": {"nodes": nodes}}}
 
 
 def parse(ts):
