@@ -18,3 +18,5 @@ dist/
 
 # CB venv
 cb/
+# Instance config (copy of config.example.json)
+config.json

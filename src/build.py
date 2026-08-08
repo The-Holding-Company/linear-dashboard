@@ -14,11 +14,44 @@ ROOT = HERE.parent
 TEMPLATE = HERE / "template.html"
 OUT = ROOT / "dist" / "index.html"
 CACHE = ROOT / "dist" / "issues.json"
-CONFIG = Path.home() / ".config" / "linear" / "config.json"
+
+DEFAULTS = {
+    "workspace": "your-workspace",
+    "team_key": "ENG",
+    "title": "Linear Dashboard",
+    "stale_days": 14,
+    "recent_limit": 15,
+    "stale_limit": 10,
+    "burn_weeks": 8,
+    "views": {},
+    "token_fallback": {},
+}
+
+
+def load_config():
+    path = os.environ.get("DASHBOARD_CONFIG") or ROOT / "config.json"
+    path = Path(path).expanduser()
+    if not path.exists():
+        path = ROOT / "config.example.json"
+    cfg = dict(DEFAULTS)
+    if path.exists():
+        cfg.update(json.load(path.open()))
+    cfg["views"] = cfg.get("views") or {}
+    return cfg
+
+
+CFG = load_config()
+WORKSPACE_URL = f"https://linear.app/{CFG['workspace']}"
+TEAM_ALL = f"{WORKSPACE_URL}/team/{CFG['team_key']}/all"
+
+
+def view(name, default=None):
+    return CFG["views"].get(name) or default or TEAM_ALL
+
 
 QUERY = (
-    "query($after:String){"
-    'issues(filter:{team:{key:{eq:"HC"}}},first:250,after:$after,orderBy:createdAt)'
+    "query($team:String!,$after:String){"
+    "issues(filter:{team:{key:{eq:$team}}},first:250,after:$after,orderBy:createdAt)"
     "{pageInfo{hasNextPage endCursor}"
     "nodes{identifier title url createdAt completedAt canceledAt updatedAt "
     "priority estimate state{name type} team{key} "
@@ -30,8 +63,13 @@ def token():
     env = os.environ.get("LINEAR_API_KEY")
     if env:
         return env
-    cfg = json.load(CONFIG.open())
-    return cfg["workspaces"]["holdingco11"]["users"]["cbergeron"]["keys"]["read_only"]
+    fb = CFG.get("token_fallback") or {}
+    if fb.get("file") and fb.get("json_path"):
+        node = json.load(Path(fb["file"]).expanduser().open())
+        for part in fb["json_path"].split("."):
+            node = node[part]
+        return node
+    raise SystemExit("LINEAR_API_KEY unset and no token_fallback configured")
 
 
 def fetch():
@@ -39,7 +77,12 @@ def fetch():
     while True:
         req = urllib.request.Request(
             "https://api.linear.app/graphql",
-            data=json.dumps({"query": QUERY, "variables": {"after": cursor}}).encode(),
+            data=json.dumps(
+                {
+                    "query": QUERY,
+                    "variables": {"team": CFG["team_key"], "after": cursor},
+                }
+            ).encode(),
             headers={"Authorization": token(), "Content-Type": "application/json"},
         )
         with urllib.request.urlopen(req, timeout=30) as r:
@@ -94,7 +137,7 @@ def build():
                 ),
             }
         )
-    burn_weeks = [b["closed"] for b in weeks[-8:]]
+    burn_weeks = [b["closed"] for b in weeks[-CFG["burn_weeks"]:]]
     burn_rate = round(sum(burn_weeks) / max(len(burn_weeks), 1), 1)
     weeks_to_clear = round(open_ct / burn_rate, 1) if burn_rate > 0 else None
 
@@ -122,7 +165,7 @@ def build():
     else:
         avg_age, oldest, oldest_age = 0, None, 0
 
-    recent = sorted(issues, key=lambda i: i["_c"], reverse=True)[:15]
+    recent = sorted(issues, key=lambda i: i["_c"], reverse=True)[: CFG["recent_limit"]]
     recent_rows = [
         {
             "id": i["identifier"],
@@ -138,7 +181,7 @@ def build():
     ]
 
     stale = sorted(
-        [i for i in open_issues if (now - i["_c"]).days > 14],
+        [i for i in open_issues if (now - i["_c"]).days > CFG["stale_days"]],
         key=lambda i: i["_c"],
     )
     stale_rows = [
@@ -149,7 +192,7 @@ def build():
             "state": i["_s"],
             "age": (now - i["_c"]).days,
         }
-        for i in stale[:10]
+        for i in stale[: CFG["stale_limit"]]
     ]
 
     created_today, created_7d, created_30d = (
@@ -166,6 +209,7 @@ def build():
 
     dashboard = {
         "generated": now.strftime("%Y-%m-%d %H:%M UTC"),
+        "stale_days": CFG["stale_days"],
         "total": total,
         "open": open_ct,
         "completed": completed,
@@ -205,8 +249,28 @@ def build():
         else "\u2014"
     )
 
+    team_backlog = f"{WORKSPACE_URL}/team/{CFG['team_key']}/backlog"
     repl = {
         "__GENERATED__": dashboard["generated"],
+        "__TITLE__": CFG["title"],
+        "__TEAM_KEY__": CFG["team_key"],
+        "__STALE_DAYS__": str(CFG["stale_days"]),
+        "__LINK_ALL__": view("all"),
+        "__LINK_OPEN__": view("open"),
+        "__LINK_IN_PROGRESS__": view("in_progress"),
+        "__LINK_BACKLOG__": view("backlog", team_backlog),
+        "__LINK_COMPLETED__": view("completed"),
+        "__LINK_CANCELED__": view("canceled"),
+        "__LINK_CREATED_TODAY__": view("created_today"),
+        "__LINK_CREATED_7D__": view("created_7d"),
+        "__LINK_CREATED_30D__": view("created_30d"),
+        "__LINK_CLOSED_TODAY__": view("closed_today"),
+        "__LINK_CLOSED_7D__": view("closed_7d"),
+        "__LINK_CLOSED_30D__": view("closed_30d"),
+        "__LINK_NET_30D__": view("created_30d"),
+        "__LINK_BURN__": view("burn"),
+        "__LINK_AVG_AGE__": view("open"),
+        "__LINK_STALE__": view("stale", view("open")),
         "__TOTAL__": str(total),
         "__OPEN__": str(open_ct),
         "__COMPLETED__": str(completed),

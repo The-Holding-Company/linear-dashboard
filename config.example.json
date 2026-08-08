@@ -1,0 +1,31 @@
+{
+  "_comment": "Copy to config.json and edit. Every key is optional — defaults shown here. 'views' values are full Linear URLs; when omitted, KPI numbers link to the generic team views derived from workspace + team_key.",
+  "workspace": "your-workspace",
+  "team_key": "ENG",
+  "title": "Linear Dashboard",
+  "stale_days": 14,
+  "recent_limit": 15,
+  "stale_limit": 10,
+  "burn_weeks": 8,
+  "views": {
+    "all": null,
+    "open": null,
+    "in_progress": null,
+    "backlog": null,
+    "completed": null,
+    "canceled": null,
+    "created_today": null,
+    "created_7d": null,
+    "created_30d": null,
+    "closed_today": null,
+    "closed_7d": null,
+    "closed_30d": null,
+    "burn": null,
+    "stale": null
+  },
+  "token_fallback": {
+    "_comment": "Optional local-dev fallback when LINEAR_API_KEY is unset: a JSON file and a dotted path to the key inside it.",
+    "file": null,
+    "json_path": null
+  }
+}
