@@ -38,9 +38,26 @@ linear-dashboard/
 open dist/index.html
 ```
 
+## Deployment (containerized)
+
+Served at **https://linear.holdingco.com** (LAN, Traefik,
+`*.holdingco.com` wildcard cert). `~/Docker/linear-dashboard` symlinks
+here.
+
+- `builder` — python:3.13-alpine; renders once at start, then busybox
+  crond re-renders every 30 min into a shared `dist` volume.
+- `web` — nginx:alpine serving the volume on `traefik_net`.
+
+```bash
+./refresh-env.sh              # pull LINEAR_API_KEY from OpenBao → .env
+docker compose up -d --build
+```
+
 ## Linear auth
 
-Reads `~/.config/linear/config.json`, key path:
+`LINEAR_API_KEY` env var (containers get it from OpenBao
+`secret/holdingco/linear`, field `read_only`, via `refresh-env.sh`);
+falls back to `~/.config/linear/config.json`, key path:
 
 ```
 workspaces.holdingco11.users.cbergeron.keys.read_only
@@ -48,8 +65,8 @@ workspaces.holdingco11.users.cbergeron.keys.read_only
 
 ## Roadmap
 
-- Cron the refresh + publish to `linear.holdingco.com` (Traefik static
-  site).
+- ~~Cron the refresh + publish to `linear.holdingco.com` (Traefik static
+  site).~~ Done 2026-08-03.
 - Per-project breakdown panel.
 - Cycle-time / time-in-state metrics (need `history` from Linear API).
 - Optional Slack digest of the same numbers.

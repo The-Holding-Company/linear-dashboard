@@ -1,0 +1,43 @@
+# id: f2d17d73-61a0-4ff3-8b52-253707b70573
+# slug: containerize-linear-dashboard-traefik
+# entity: holdingco
+#
+# linear-dashboard — static HC Linear summary at https://linear.holdingco.com
+# builder regenerates dist/index.html every 30 min (busybox crond);
+# web serves the shared volume behind Traefik (*.holdingco.com wildcard cert).
+# LINEAR_API_KEY comes from OpenBao: ./refresh-env.sh writes .env (gitignored).
+
+services:
+  builder:
+    build: .
+    image: linear-dashboard-builder:latest
+    container_name: linear-dashboard-builder
+    environment:
+      - LINEAR_API_KEY=${LINEAR_API_KEY:?run ./refresh-env.sh to pull from OpenBao}
+    volumes:
+      - dist:/app/dist
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: linear-dashboard-web
+    volumes:
+      - dist:/usr/share/nginx/html:ro
+    networks:
+      - traefik_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.linear-dashboard.rule=Host(`linear.holdingco.com`)"
+      - "traefik.http.routers.linear-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.linear-dashboard.tls=true"
+      - "traefik.http.services.linear-dashboard.loadbalancer.server.port=80"
+      - "autoheal=true"
+    restart: unless-stopped
+
+volumes:
+  dist:
+
+networks:
+  traefik_net:
+    external: true
+    name: traefik_net
