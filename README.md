@@ -102,6 +102,8 @@ bind-mounted read-only into the builder, so config changes take effect on the ne
 
 ```
 linear-dashboard/
+├── docs/
+│   └── DASHBOARD-PANELS.md   # panel-by-panel reading guide (this site + Grafana)
 ├── src/
 │   ├── build.py             # fetch + render (stdlib only)
 │   └── template.html        # CSS/JS template (placeholders: __TOKEN__)
@@ -114,6 +116,13 @@ linear-dashboard/
 ├── start.sh                 # local convenience runner
 └── refresh-env.sh           # HoldingCo-specific: OpenBao → .env
 ```
+
+## Documentation
+
+- **[docs/DASHBOARD-PANELS.md](docs/DASHBOARD-PANELS.md)** — how to read every panel, for
+  both this site and the three Grafana `linear-*` dashboards (Overview, Flow &
+  Throughput, Backlog Health). Includes a "which panel answers my question" index and the
+  shared saved-view slug map.
 
 ## Roadmap
 
