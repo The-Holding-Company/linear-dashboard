@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>HoldingCo · Linear Dashboard</title>
+<title>__TITLE__</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -25,6 +25,9 @@
   .kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase;
                 letter-spacing: 0.5px; margin-bottom: 6px; }
   .kpi .val { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kpi .val a, .mini-stat a { color: inherit; text-decoration: none; }
+  .kpi .val a:hover, .mini-stat a:hover { text-decoration: underline; }
+  .kpi .sub a { color: inherit; }
   .kpi .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .kpi.accent .val { color: var(--accent); }
   .kpi.good .val { color: var(--green); }
@@ -62,36 +65,36 @@
 </head>
 <body>
 <header>
-  <h1>HoldingCo &middot; Linear Dashboard <span style="color:var(--muted);font-weight:400;font-size:14px;">team HC</span></h1>
-  <div class="meta">generated __GENERATED__ &middot; <a href="https://linear.app/holdingco11/team/HC/all">open in Linear &#8599;</a></div>
+  <h1>__TITLE__ <span style="color:var(--muted);font-weight:400;font-size:14px;">team __TEAM_KEY__</span></h1>
+  <div class="meta">generated __GENERATED__ &middot; <a href="__LINK_ALL__">open in Linear &#8599;</a></div>
 </header>
 <main>
   <div class="kpi-grid">
-    <div class="kpi"><div class="label">Total issues</div><div class="val">__TOTAL__</div></div>
-    <div class="kpi accent"><div class="label">Open</div><div class="val">__OPEN__</div><div class="sub">__IN_PROGRESS__ in progress &middot; __BACKLOG__ backlog</div></div>
-    <div class="kpi good"><div class="label">Completed</div><div class="val">__COMPLETED__</div><div class="sub">__COMPLETION_PCT__% completion rate</div></div>
-    <div class="kpi bad"><div class="label">Canceled</div><div class="val">__CANCELED__</div></div>
-    <div class="kpi warn"><div class="label">Burn rate</div><div class="val">__BURN__<span style="font-size:14px;color:var(--muted);">/wk</span></div><div class="sub">__WTC__</div></div>
-    <div class="kpi"><div class="label">Avg open age</div><div class="val">__AVG_AGE__<span style="font-size:14px;color:var(--muted);">d</span></div><div class="sub">oldest: __OLDEST__</div></div>
+    <div class="kpi"><div class="label">Total issues</div><div class="val"><a href="__LINK_ALL__" target="_blank">__TOTAL__</a></div></div>
+    <div class="kpi accent"><div class="label">Open</div><div class="val"><a href="__LINK_OPEN__" target="_blank">__OPEN__</a></div><div class="sub"><a href="__LINK_IN_PROGRESS__" target="_blank">__IN_PROGRESS__ in progress</a> &middot; <a href="__LINK_BACKLOG__" target="_blank">__BACKLOG__ backlog</a></div></div>
+    <div class="kpi good"><div class="label">Completed</div><div class="val"><a href="__LINK_COMPLETED__" target="_blank">__COMPLETED__</a></div><div class="sub">__COMPLETION_PCT__% completion rate</div></div>
+    <div class="kpi bad"><div class="label">Canceled</div><div class="val"><a href="__LINK_CANCELED__" target="_blank">__CANCELED__</a></div></div>
+    <div class="kpi warn"><div class="label">Burn rate</div><div class="val"><a href="__LINK_BURN__" target="_blank">__BURN__<span style="font-size:14px;color:var(--muted);">/wk</span></a></div><div class="sub">__WTC__</div></div>
+    <div class="kpi"><div class="label">Avg open age</div><div class="val"><a href="__LINK_AVG_AGE__" target="_blank">__AVG_AGE__<span style="font-size:14px;color:var(--muted);">d</span></a></div><div class="sub">oldest: __OLDEST__</div></div>
   </div>
 
   <div class="row thirds">
     <div class="panel"><h2>Created</h2>
       <div style="display:flex;gap:32px;">
-        <div><div class="mini-stat">__CREATED_TODAY__</div><div class="mini-label">today</div></div>
-        <div><div class="mini-stat">__CREATED_7D__</div><div class="mini-label">7 days</div></div>
-        <div><div class="mini-stat">__CREATED_30D__</div><div class="mini-label">30 days</div></div>
+        <div><div class="mini-stat"><a href="__LINK_CREATED_TODAY__" target="_blank">__CREATED_TODAY__</a></div><div class="mini-label">today</div></div>
+        <div><div class="mini-stat"><a href="__LINK_CREATED_7D__" target="_blank">__CREATED_7D__</a></div><div class="mini-label">7 days</div></div>
+        <div><div class="mini-stat"><a href="__LINK_CREATED_30D__" target="_blank">__CREATED_30D__</a></div><div class="mini-label">30 days</div></div>
       </div>
     </div>
     <div class="panel"><h2>Closed</h2>
       <div style="display:flex;gap:32px;">
-        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_TODAY__</div><div class="mini-label">today</div></div>
-        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_7D__</div><div class="mini-label">7 days</div></div>
-        <div><div class="mini-stat" style="color:var(--green);">__CLOSED_30D__</div><div class="mini-label">30 days</div></div>
+        <div><div class="mini-stat" style="color:var(--green);"><a href="__LINK_CLOSED_TODAY__" target="_blank">__CLOSED_TODAY__</a></div><div class="mini-label">today</div></div>
+        <div><div class="mini-stat" style="color:var(--green);"><a href="__LINK_CLOSED_7D__" target="_blank">__CLOSED_7D__</a></div><div class="mini-label">7 days</div></div>
+        <div><div class="mini-stat" style="color:var(--green);"><a href="__LINK_CLOSED_30D__" target="_blank">__CLOSED_30D__</a></div><div class="mini-label">30 days</div></div>
       </div>
     </div>
     <div class="panel"><h2>Net change &middot; 30d</h2>
-      <div class="mini-stat">__NET_30D__</div>
+      <div class="mini-stat"><a href="__LINK_NET_30D__" target="_blank">__NET_30D__</a></div>
       <div class="mini-label">created &minus; closed</div>
     </div>
   </div>
@@ -114,7 +117,7 @@
     <table><thead><tr><th>ID</th><th>Title</th><th>State</th><th>Priority</th><th>Assignee</th><th>Created</th></tr></thead>
       <tbody id="recent"></tbody></table></div>
 
-  <div class="panel"><h2>Stale open issues &middot; older than 14 days</h2>
+  <div class="panel"><h2><a href="__LINK_STALE__" target="_blank" style="color:inherit;text-decoration:none;">Stale open issues &middot; older than __STALE_DAYS__ days &#8599;</a></h2>
     <table><thead><tr><th>ID</th><th>Title</th><th>State</th><th>Age</th></tr></thead>
       <tbody id="stale"></tbody></table></div>
 </main>
@@ -188,7 +191,7 @@ document.getElementById('recent').innerHTML = D.recent.map(r =>
      <td class="id">${r.created}</td></tr>`).join('');
 
 if (D.stale.length === 0) {
-  document.getElementById('stale').innerHTML = '<tr><td colspan="4" style="color:var(--muted);">No open issues older than 14 days.</td></tr>';
+  document.getElementById('stale').innerHTML = `<tr><td colspan="4" style="color:var(--muted);">No open issues older than ${D.stale_days} days.</td></tr>`;
 } else {
   document.getElementById('stale').innerHTML = D.stale.map(r =>
     `<tr><td class="id">${r.id}</td>

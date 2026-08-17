@@ -16,6 +16,7 @@ services:
       - LINEAR_API_KEY=${LINEAR_API_KEY:?run ./refresh-env.sh to pull from OpenBao}
     volumes:
       - dist:/app/dist
+      - ./config.json:/app/config.json:ro
     restart: unless-stopped
 
   web:
